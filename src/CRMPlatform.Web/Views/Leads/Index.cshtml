@@ -1,0 +1,89 @@
+@model CRMPlatform.Application.Common.PaginatedList<CRMPlatform.Domain.Entities.Lead>
+@{
+    ViewData["Title"] = "Leads";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Leads Pipeline</h2>
+    <a asp-action="Create" class="btn btn-primary">+ Add Lead</a>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-2">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Search by name, company, email..." value="@ViewData["CurrentSearch"]" />
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="New" selected="@(ViewData["CurrentStatus"]?.ToString() == "New")">New</option>
+                    <option value="Contacted" selected="@(ViewData["CurrentStatus"]?.ToString() == "Contacted")">Contacted</option>
+                    <option value="Qualified" selected="@(ViewData["CurrentStatus"]?.ToString() == "Qualified")">Qualified</option>
+                    <option value="Converted" selected="@(ViewData["CurrentStatus"]?.ToString() == "Converted")">Converted</option>
+                    <option value="Lost" selected="@(ViewData["CurrentStatus"]?.ToString() == "Lost")">Lost</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-dark w-100">Filter</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Lead Name</th>
+                    <th>Company</th>
+                    <th>Email / Phone</th>
+                    <th>Est. Value</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="6" class="text-center py-4 text-muted">No leads found.</td></tr>
+                }
+                @foreach (var lead in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">@lead.LeadName</td>
+                        <td>@(lead.CompanyName ?? "Individual")</td>
+                        <td>
+                            <div>@lead.Email</div>
+                            <small class="text-muted">@lead.Phone</small>
+                        </td>
+                        <td>@(lead.EstimatedValue.HasValue ? lead.EstimatedValue.Value.ToString("C") : "—")</td>
+                        <td>
+                            @{
+                                var badge = lead.Status switch
+                                {
+                                    "New" => "bg-info text-dark",
+                                    "Contacted" => "bg-warning text-dark",
+                                    "Qualified" => "bg-success",
+                                    "Converted" => "bg-primary",
+                                    "Lost" => "bg-danger",
+                                    _ => "bg-secondary"
+                                };
+                            }
+                            <span class="badge @badge">@lead.Status</span>
+                        </td>
+                        <td class="text-end">
+                            @if (lead.Status == "Qualified")
+                            {
+                                <a asp-action="Convert" asp-route-id="@lead.LeadId" class="btn btn-sm btn-success me-1">Convert</a>
+                            }
+                            <a asp-action="Edit" asp-route-id="@lead.LeadId" class="btn btn-sm btn-outline-primary">Edit</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

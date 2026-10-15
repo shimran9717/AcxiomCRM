@@ -1,0 +1,139 @@
+@model CRMPlatform.Application.Common.PaginatedList<CRMPlatform.Domain.Entities.AuditLog>
+@{
+    ViewData["Title"] = "System Audit Trail";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0">System Audit Trail</h2>
+        <small class="text-muted">Append-only compliance log for data changes and authentication events</small>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-2">
+            <div class="col-md-3">
+                <input type="text" name="search" class="form-control" placeholder="Search by User, Record ID, IP..." value="@ViewData["CurrentSearch"]" />
+            </div>
+            <div class="col-md-3">
+                <select name="entity" class="form-select">
+                    <option value="">All Entities</option>
+                    <option value="Customer" selected="@(ViewData["CurrentEntity"]?.ToString() == "Customer")">Customer</option>
+                    <option value="Lead" selected="@(ViewData["CurrentEntity"]?.ToString() == "Lead")">Lead</option>
+                    <option value="Opportunity" selected="@(ViewData["CurrentEntity"]?.ToString() == "Opportunity")">Opportunity</option>
+                    <option value="FollowUp" selected="@(ViewData["CurrentEntity"]?.ToString() == "FollowUp")">FollowUp</option>
+                    <option value="IdentityUser" selected="@(ViewData["CurrentEntity"]?.ToString() == "IdentityUser")">IdentityUser (Auth)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="actionType" class="form-select">
+                    <option value="">All Actions</option>
+                    <option value="Create" selected="@(ViewData["CurrentAction"]?.ToString() == "Create")">Create</option>
+                    <option value="Update" selected="@(ViewData["CurrentAction"]?.ToString() == "Update")">Update</option>
+                    <option value="Delete" selected="@(ViewData["CurrentAction"]?.ToString() == "Delete")">Delete</option>
+                    <option value="Login Success" selected="@(ViewData["CurrentAction"]?.ToString() == "Login Success")">Login Success</option>
+                    <option value="Login Failed" selected="@(ViewData["CurrentAction"]?.ToString() == "Login Failed")">Login Failed</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-dark w-100">Filter</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+                <tr>
+                    <th>Timestamp (UTC)</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Entity</th>
+                    <th>Record ID</th>
+                    <th>IP Address</th>
+                    <th>Diff Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No audit logs matching criteria.</td>
+                    </tr>
+                }
+                @foreach (var log in Model)
+                {
+                    var badgeClass = log.Action switch
+                    {
+                        "Create" => "bg-success",
+                        "Update" => "bg-warning text-dark",
+                        "Delete" => "bg-danger",
+                        "Login Success" => "bg-info text-dark",
+                        "Login Failed" => "bg-danger",
+                        _ => "bg-secondary"
+                    };
+
+                    <tr>
+                        <td>@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td class="fw-semibold">@log.UserId</td>
+                        <td><span class="badge @badgeClass">@log.Action</span></td>
+                        <td>@log.EntityName</td>
+                        <td>#@log.RecordId</td>
+                        <td><code>@log.IpAddress</code></td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(log.OldValues) || !string.IsNullOrEmpty(log.NewValues))
+                            {
+                                <details>
+                                    <summary class="text-primary cursor-pointer">View Changes</summary>
+                                    <div class="p-2 mt-1 bg-light rounded text-dark" style="max-width: 450px; font-size: 11px;">
+                                        @if (!string.IsNullOrEmpty(log.OldValues))
+                                        {
+                                            <div class="text-danger fw-semibold mb-1">Old Values:</div>
+                                            <pre class="mb-2">@log.OldValues</pre>
+                                        }
+                                        @if (!string.IsNullOrEmpty(log.NewValues))
+                                        {
+                                            <div class="text-success fw-semibold mb-1">New Values:</div>
+                                            <pre class="mb-0">@log.NewValues</pre>
+                                        }
+                                    </div>
+                                </details>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+            <span class="small text-muted">Page @Model.PageIndex of @Model.TotalPages (Total: @Model.TotalCount)</span>
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" 
+                       asp-route-page="@(Model.PageIndex - 1)" 
+                       asp-route-search="@ViewData["CurrentSearch"]"
+                       asp-route-entity="@ViewData["CurrentEntity"]"
+                       asp-route-actionType="@ViewData["CurrentAction"]">Prev</a>
+                </li>
+                <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" 
+                       asp-route-page="@(Model.PageIndex + 1)" 
+                       asp-route-search="@ViewData["CurrentSearch"]"
+                       asp-route-entity="@ViewData["CurrentEntity"]"
+                       asp-route-actionType="@ViewData["CurrentAction"]">Next</a>
+                </li>
+            </ul>
+        </div>
+    }
+</div>

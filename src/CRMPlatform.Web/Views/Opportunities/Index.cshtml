@@ -1,0 +1,79 @@
+@model CRMPlatform.Application.Common.PaginatedList<CRMPlatform.Domain.Entities.Opportunity>
+@{
+    ViewData["Title"] = "Opportunities Pipeline";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Deals & Opportunities</h2>
+    <a asp-action="Create" class="btn btn-primary">+ Create Opportunity</a>
+</div>
+
+<!-- Weighted Pipeline Summary KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm bg-primary text-white p-3">
+            <div class="small opacity-75 text-uppercase fw-semibold">Total Pipeline Value</div>
+            <h3 class="fw-bold mb-0">@ViewBag.TotalPipeline.ToString("C")</h3>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm bg-success text-white p-3">
+            <div class="small opacity-75 text-uppercase fw-semibold">Weighted Pipeline Forecast (Amount × Probability)</div>
+            <h3 class="fw-bold mb-0">@ViewBag.WeightedPipeline.ToString("C")</h3>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Opportunity</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Probability</th>
+                    <th>Weighted Value</th>
+                    <th>Stage</th>
+                    <th>Expected Close</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="8" class="text-center py-4 text-muted">No opportunities found.</td></tr>
+                }
+                @foreach (var opp in Model)
+                {
+                    var weighted = (opp.Amount * opp.Probability) / 100m;
+                    <tr>
+                        <td class="fw-semibold">@opp.OpportunityName</td>
+                        <td>@opp.Customer?.CompanyName</td>
+                        <td>@opp.Amount.ToString("C")</td>
+                        <td>@opp.Probability%</td>
+                        <td class="text-success fw-bold">@weighted.ToString("C")</td>
+                        <td>
+                            @{
+                                var stageBadge = opp.Stage switch
+                                {
+                                    "Qualification" => "bg-secondary",
+                                    "Proposal" => "bg-info text-dark",
+                                    "Negotiation" => "bg-warning text-dark",
+                                    "Closed Won" => "bg-success",
+                                    "Closed Lost" => "bg-danger",
+                                    _ => "bg-primary"
+                                };
+                            }
+                            <span class="badge @stageBadge">@opp.Stage</span>
+                        </td>
+                        <td>@(opp.ExpectedCloseDate?.ToString("yyyy-MM-dd") ?? "—")</td>
+                        <td class="text-end">
+                            <a asp-action="Edit" asp-route-id="@opp.OpportunityId" class="btn btn-sm btn-outline-primary">Edit</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
