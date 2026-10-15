@@ -10,11 +10,14 @@ using CRMPlatform.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. Context Accessor & Current User Service
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+// 2. Register SaveChanges Audit Interceptor
 builder.Services.AddScoped<AuditLogInterceptor>();
 
+// 3. PostgreSQL DbContext Configuration
 builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
 {
     var auditInterceptor = serviceProvider.GetRequiredService<AuditLogInterceptor>();
@@ -24,9 +27,11 @@ builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =
         .AddInterceptors(auditInterceptor);
 });
 
+// DbContext Abstraction for Clean Architecture
 builder.Services.AddScoped<IApplicationDbContext>(provider =>
     provider.GetRequiredService<ApplicationDbContext>());
 
+// 4. ASP.NET Core Identity Configuration
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
@@ -45,6 +50,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// 5. Authentication Cookie Settings (Returns 401/403 for /api routes)
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
@@ -88,7 +94,7 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// 7. Seed Roles and Default Admin safely
+// 7. Seed Roles & Default Admin Account
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -116,6 +122,10 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Map REST API Endpoints ([ApiController])
+app.MapControllers();
+
+// Map MVC Controller Routes
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
