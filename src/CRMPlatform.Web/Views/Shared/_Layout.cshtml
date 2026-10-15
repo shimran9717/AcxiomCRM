@@ -8,7 +8,10 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    @{
+        var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+    }
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">CRM Engine</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,39 +20,43 @@
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                        <a class="nav-link @(currentController == "Home" ? "active fw-semibold" : "")" asp-controller="Home" asp-action="Index">Home</a>
                     </li>
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Customers" asp-action="Index">Customers</a>
+                            <a class="nav-link @(currentController == "Dashboard" ? "active fw-semibold" : "")" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Leads" asp-action="Index">Leads</a>
+                            <a class="nav-link @(currentController == "Customers" ? "active fw-semibold" : "")" asp-controller="Customers" asp-action="Index">Customers</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Opportunities" asp-action="Index">Opportunities</a>
+                            <a class="nav-link @(currentController == "Leads" ? "active fw-semibold" : "")" asp-controller="Leads" asp-action="Index">Leads</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Activities" asp-action="Index">Activities</a>
+                            <a class="nav-link @(currentController == "Opportunities" ? "active fw-semibold" : "")" asp-controller="Opportunities" asp-action="Index">Opportunities</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Activities" ? "active fw-semibold" : "")" asp-controller="Activities" asp-action="Index">Activities</a>
                         </li>
                     }
                 </ul>
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center">
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 @User.Identity.Name
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                @if (User.IsInRole("Admin"))
+                            <ul class="dropdown-menu dropdown-menu-end shadow">
+                                @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
                                 {
                                     <li><a class="dropdown-item" asp-controller="AuditLogs" asp-action="Index">Audit Logs</a></li>
                                     <li><hr class="dropdown-divider" /></li>
                                 }
                                 <li>
-                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
                                         <button type="submit" class="dropdown-item text-danger">Sign Out</button>
                                     </form>
                                 </li>
@@ -59,7 +66,7 @@
                     else
                     {
                         <li class="nav-item">
-                            <a class="nav-link btn btn-outline-light btn-sm px-3" asp-controller="Account" asp-action="Login">Sign In</a>
+                            <a class="btn btn-outline-light btn-sm px-3" asp-controller="Account" asp-action="Login">Sign In</a>
                         </li>
                     }
                 </ul>
@@ -73,14 +80,14 @@
 
     <footer class="footer mt-auto py-3 bg-white border-top text-center text-muted small">
         <div class="container">
-            &copy; @DateTime.UtcNow.Year - CRM Platform
+            &copy; @DateTime.UtcNow.Year - CRM Platform. All rights reserved.
         </div>
     </footer>
 
-    <!-- Bootstrap Bundle with Popper & jQuery -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

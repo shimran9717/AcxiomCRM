@@ -10,14 +10,11 @@ using CRMPlatform.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Enable HttpContextAccessor & Register CurrentUserService
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
-// 2. Register Interceptor
 builder.Services.AddScoped<AuditLogInterceptor>();
 
-// 3. Configure PostgreSQL with AuditLogInterceptor Attached
 builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
 {
     var auditInterceptor = serviceProvider.GetRequiredService<AuditLogInterceptor>();
@@ -27,11 +24,9 @@ builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =
         .AddInterceptors(auditInterceptor);
 });
 
-// Register DbContext Abstraction
 builder.Services.AddScoped<IApplicationDbContext>(provider =>
     provider.GetRequiredService<ApplicationDbContext>());
 
-// 4. Configure ASP.NET Core Identity with Strict Policies & Lockout
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
@@ -50,7 +45,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// 5. Configure Cookie Authentication Redirection Paths
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
@@ -58,6 +52,28 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.SlidingExpiration = true;
+
+    options.Events.OnRedirectToLogin = context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/api"))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        }
+        context.Response.Redirect(context.RedirectUri);
+        return Task.CompletedTask;
+    };
+
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/api"))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        }
+        context.Response.Redirect(context.RedirectUri);
+        return Task.CompletedTask;
+    };
 });
 
 // 6. Register Application Services

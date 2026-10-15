@@ -1,0 +1,237 @@
+@model CRMPlatform.Web.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Executive Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0">Executive Dashboard</h2>
+        <span class="text-muted small">Real-time KPI summaries & pipeline analytics</span>
+    </div>
+    <div class="badge bg-dark py-2 px-3 fs-6">
+        Role Scope: @(User.IsInRole("Admin") ? "Enterprise (Admin)" : User.IsInRole("Manager") ? "Team (Manager)" : "Personal (Sales Exec)")
+    </div>
+</div>
+
+<!-- Row 1: KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+        <div class="card shadow-sm border-0 border-start border-primary border-4 h-100">
+            <div class="card-body">
+                <div class="text-muted small text-uppercase fw-bold">Active Pipeline Value</div>
+                <div class="fs-4 fw-bold text-primary mt-1">@Model.TotalPipelineValue.ToString("C0")</div>
+                <div class="small text-muted mt-1">
+                    Weighted: <span class="fw-semibold">@Model.WeightedPipelineValue.ToString("C0")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="card shadow-sm border-0 border-start border-success border-4 h-100">
+            <div class="card-body">
+                <div class="text-muted small text-uppercase fw-bold">Customers & Won Deals</div>
+                <div class="fs-4 fw-bold text-success mt-1">@Model.TotalCustomers Customers</div>
+                <div class="small text-muted mt-1">
+                    Won Deals: <span class="badge bg-success">@Model.WonOpportunities</span>
+                    Lost: <span class="badge bg-danger">@Model.LostOpportunities</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="card shadow-sm border-0 border-start border-warning border-4 h-100">
+            <div class="card-body">
+                <div class="text-muted small text-uppercase fw-bold">Leads Pipeline</div>
+                <div class="fs-4 fw-bold text-warning mt-1">@Model.OpenLeads Open</div>
+                <div class="small text-muted mt-1">
+                    Total Pool: <span class="fw-semibold">@Model.TotalLeads</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="card shadow-sm border-0 border-start border-info border-4 h-100">
+            <div class="card-body">
+                <div class="text-muted small text-uppercase fw-bold">Active Opportunities</div>
+                <div class="fs-4 fw-bold text-info mt-1">@Model.OpenOpportunities Deals Active</div>
+                <div class="small text-muted mt-1">
+                    Total Lifetime Deals: <span class="fw-semibold">@Model.TotalOpportunities</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2: Charts -->
+<div class="row g-4 mb-4">
+    <!-- Chart 1: Lead Status Breakdown -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold mb-0">Lead Status Breakdown</h6>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <div style="position: relative; height: 260px; width: 100%;">
+                    <canvas id="leadsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Opportunity Funnel -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold mb-0">Opportunity Pipeline Stage Value</h6>
+            </div>
+            <div class="card-body">
+                <div style="position: relative; height: 260px; width: 100%;">
+                    <canvas id="pipelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 3: Monthly Closed Won Trailing Revenue -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0">Monthly Realized Revenue (Closed Won Deals)</h6>
+                <span class="small text-muted">Trailing 6 Months</span>
+            </div>
+            <div class="card-body">
+                <div style="position: relative; height: 280px; width: 100%;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Palette definitions
+            const colors = {
+                primary: '#0d6efd',
+                success: '#198754',
+                warning: '#ffc107',
+                danger: '#dc3545',
+                info: '#0dcaf0',
+                gray: '#6c757d'
+            };
+
+            // 1. Lead Status Breakdown (Doughnut)
+            const leadsCtx = document.getElementById('leadsChart').getContext('2d');
+            new Chart(leadsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LeadStatusLabels)),
+                    datasets: [{
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LeadStatusCounts)),
+                        backgroundColor: [colors.info, colors.warning, colors.success, colors.primary, colors.danger],
+                        borderWidth: 2,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // 2. Pipeline Funnel (Bar)
+            const pipelineCtx = document.getElementById('pipelineChart').getContext('2d');
+            new Chart(pipelineCtx, {
+                type: 'bar',
+                data: {
+                    labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StageLabels)),
+                    datasets: [{
+                        label: 'Stage Total Value ($)',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StageValues)),
+                        backgroundColor: [
+                            'rgba(13, 110, 253, 0.75)',
+                            'rgba(13, 202, 240, 0.75)',
+                            'rgba(255, 193, 7, 0.75)',
+                            'rgba(25, 135, 84, 0.75)',
+                            'rgba(220, 53, 69, 0.75)'
+                        ],
+                        borderColor: [colors.primary, colors.info, colors.warning, colors.success, colors.danger],
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (val) {
+                                    return '$' + Number(val).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    return ' ' + ctx.dataset.label + ': $' + Number(ctx.parsed.y).toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 3. Monthly Revenue Trend (Line + Area)
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyLabels)),
+                    datasets: [{
+                        label: 'Closed Revenue ($)',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyWonRevenue)),
+                        backgroundColor: 'rgba(25, 135, 84, 0.15)',
+                        borderColor: colors.success,
+                        borderWidth: 3,
+                        pointBackgroundColor: colors.success,
+                        pointRadius: 5,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (val) {
+                                    return '$' + Number(val).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    return ' Won Revenue: $' + Number(ctx.parsed.y).toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

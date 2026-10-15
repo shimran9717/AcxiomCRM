@@ -37,34 +37,34 @@ namespace CRMPlatform.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("AssignedTo")
+                    b.Property<string>("ApplicationUserId")
                         .HasColumnType("text");
 
                     b.Property<int?>("CustomerId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int?>("LeadId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int?>("OpportunityId")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Subject")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                    b.Property<string>("PerformedBy")
+                        .HasColumnType("text");
 
                     b.HasKey("ActivityId");
 
-                    b.HasIndex("AssignedTo");
+                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("LeadId");
+
+                    b.HasIndex("OpportunityId");
 
                     b.ToTable("Activities");
                 });
@@ -156,21 +156,19 @@ namespace CRMPlatform.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("EntityName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
+                    b.Property<string>("NewValues")
                         .HasColumnType("text");
 
-                    b.Property<string>("NewValue")
-                        .HasColumnType("text");
-
-                    b.Property<string>("OldValue")
+                    b.Property<string>("OldValues")
                         .HasColumnType("text");
 
                     b.Property<string>("RecordId")
@@ -178,10 +176,20 @@ namespace CRMPlatform.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("UserId")
-                        .HasColumnType("text");
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.HasKey("AuditLogId");
+
+                    b.HasIndex("EntityName");
+
+                    b.HasIndex("Timestamp");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("AuditLogs");
                 });
@@ -197,44 +205,29 @@ namespace CRMPlatform.Infrastructure.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
-                    b.Property<string>("City")
+                    b.Property<string>("ApplicationUserId")
                         .HasColumnType("text");
 
                     b.Property<string>("CompanyName")
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)");
-
-                    b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CustomerCode")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
                     b.Property<string>("CustomerName")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)");
+                        .HasColumnType("text");
 
                     b.Property<string>("OwnerId")
                         .HasColumnType("text");
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<string>("State")
                         .HasColumnType("text");
 
                     b.Property<string>("Status")
@@ -243,16 +236,7 @@ namespace CRMPlatform.Infrastructure.Migrations
 
                     b.HasKey("CustomerId");
 
-                    b.HasIndex("CustomerCode")
-                        .IsUnique();
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("OwnerId");
-
-                    b.HasIndex("Phone")
-                        .IsUnique();
+                    b.HasIndex("ApplicationUserId");
 
                     b.ToTable("Customers");
                 });
@@ -265,14 +249,17 @@ namespace CRMPlatform.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FollowUpId"));
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("text");
+
                     b.Property<string>("AssignedTo")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int?>("CustomerId")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime>("FollowUpDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FollowUpType")
                         .IsRequired()
@@ -281,8 +268,14 @@ namespace CRMPlatform.Infrastructure.Migrations
                     b.Property<int?>("LeadId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Remarks")
+                    b.Property<string>("Notes")
                         .HasColumnType("text");
+
+                    b.Property<int?>("OpportunityId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ScheduledDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -290,16 +283,17 @@ namespace CRMPlatform.Infrastructure.Migrations
 
                     b.Property<string>("Subject")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("text");
 
                     b.HasKey("FollowUpId");
 
-                    b.HasIndex("AssignedTo");
+                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("LeadId");
+
+                    b.HasIndex("OpportunityId");
 
                     b.ToTable("FollowUps");
                 });
@@ -312,6 +306,9 @@ namespace CRMPlatform.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LeadId"));
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("text");
+
                     b.Property<string>("AssignedTo")
                         .HasColumnType("text");
 
@@ -323,27 +320,19 @@ namespace CRMPlatform.Infrastructure.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)");
+                        .HasColumnType("text");
 
-                    b.Property<decimal?>("ExpectedValue")
+                    b.Property<decimal?>("EstimatedValue")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
-                    b.Property<string>("LeadCode")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
                     b.Property<string>("LeadName")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Source")
                         .HasColumnType("text");
@@ -354,10 +343,7 @@ namespace CRMPlatform.Infrastructure.Migrations
 
                     b.HasKey("LeadId");
 
-                    b.HasIndex("AssignedTo");
-
-                    b.HasIndex("LeadCode")
-                        .IsUnique();
+                    b.HasIndex("ApplicationUserId");
 
                     b.ToTable("Leads");
                 });
@@ -374,25 +360,24 @@ namespace CRMPlatform.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("text");
+
                     b.Property<string>("AssignedTo")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("CustomerId")
+                    b.Property<int>("CustomerId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("ExpectedCloseDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("LeadId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("OpportunityName")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("text");
 
                     b.Property<int>("Probability")
                         .HasColumnType("integer");
@@ -401,17 +386,11 @@ namespace CRMPlatform.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("OpportunityId");
 
-                    b.HasIndex("AssignedTo");
+                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("CustomerId");
-
-                    b.HasIndex("LeadId");
 
                     b.ToTable("Opportunities");
                 });
@@ -550,94 +529,81 @@ namespace CRMPlatform.Infrastructure.Migrations
 
             modelBuilder.Entity("CRMPlatform.Domain.Entities.Activity", b =>
                 {
-                    b.HasOne("CRMPlatform.Domain.Entities.ApplicationUser", "AssignedUser")
+                    b.HasOne("CRMPlatform.Domain.Entities.ApplicationUser", null)
                         .WithMany("AssignedActivities")
-                        .HasForeignKey("AssignedTo")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ApplicationUserId");
 
                     b.HasOne("CRMPlatform.Domain.Entities.Customer", "Customer")
-                        .WithMany("Activities")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .WithMany()
+                        .HasForeignKey("CustomerId");
 
                     b.HasOne("CRMPlatform.Domain.Entities.Lead", "Lead")
-                        .WithMany("Activities")
-                        .HasForeignKey("LeadId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .WithMany()
+                        .HasForeignKey("LeadId");
 
-                    b.Navigation("AssignedUser");
+                    b.HasOne("CRMPlatform.Domain.Entities.Opportunity", "Opportunity")
+                        .WithMany()
+                        .HasForeignKey("OpportunityId");
 
                     b.Navigation("Customer");
 
                     b.Navigation("Lead");
+
+                    b.Navigation("Opportunity");
                 });
 
             modelBuilder.Entity("CRMPlatform.Domain.Entities.Customer", b =>
                 {
-                    b.HasOne("CRMPlatform.Domain.Entities.ApplicationUser", "Owner")
+                    b.HasOne("CRMPlatform.Domain.Entities.ApplicationUser", null)
                         .WithMany("OwnedCustomers")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Owner");
+                        .HasForeignKey("ApplicationUserId");
                 });
 
             modelBuilder.Entity("CRMPlatform.Domain.Entities.FollowUp", b =>
                 {
-                    b.HasOne("CRMPlatform.Domain.Entities.ApplicationUser", "AssignedUser")
+                    b.HasOne("CRMPlatform.Domain.Entities.ApplicationUser", null)
                         .WithMany("AssignedFollowUps")
-                        .HasForeignKey("AssignedTo")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ApplicationUserId");
 
                     b.HasOne("CRMPlatform.Domain.Entities.Customer", "Customer")
                         .WithMany("FollowUps")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("CustomerId");
 
                     b.HasOne("CRMPlatform.Domain.Entities.Lead", "Lead")
                         .WithMany("FollowUps")
-                        .HasForeignKey("LeadId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("LeadId");
 
-                    b.Navigation("AssignedUser");
+                    b.HasOne("CRMPlatform.Domain.Entities.Opportunity", "Opportunity")
+                        .WithMany("FollowUps")
+                        .HasForeignKey("OpportunityId");
 
                     b.Navigation("Customer");
 
                     b.Navigation("Lead");
+
+                    b.Navigation("Opportunity");
                 });
 
             modelBuilder.Entity("CRMPlatform.Domain.Entities.Lead", b =>
                 {
-                    b.HasOne("CRMPlatform.Domain.Entities.ApplicationUser", "AssignedUser")
+                    b.HasOne("CRMPlatform.Domain.Entities.ApplicationUser", null)
                         .WithMany("AssignedLeads")
-                        .HasForeignKey("AssignedTo")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("AssignedUser");
+                        .HasForeignKey("ApplicationUserId");
                 });
 
             modelBuilder.Entity("CRMPlatform.Domain.Entities.Opportunity", b =>
                 {
-                    b.HasOne("CRMPlatform.Domain.Entities.ApplicationUser", "AssignedUser")
+                    b.HasOne("CRMPlatform.Domain.Entities.ApplicationUser", null)
                         .WithMany("AssignedOpportunities")
-                        .HasForeignKey("AssignedTo")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ApplicationUserId");
 
                     b.HasOne("CRMPlatform.Domain.Entities.Customer", "Customer")
                         .WithMany("Opportunities")
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("CRMPlatform.Domain.Entities.Lead", "Lead")
-                        .WithMany("Opportunities")
-                        .HasForeignKey("LeadId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("AssignedUser");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Customer");
-
-                    b.Navigation("Lead");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -706,8 +672,6 @@ namespace CRMPlatform.Infrastructure.Migrations
 
             modelBuilder.Entity("CRMPlatform.Domain.Entities.Customer", b =>
                 {
-                    b.Navigation("Activities");
-
                     b.Navigation("FollowUps");
 
                     b.Navigation("Opportunities");
@@ -715,11 +679,12 @@ namespace CRMPlatform.Infrastructure.Migrations
 
             modelBuilder.Entity("CRMPlatform.Domain.Entities.Lead", b =>
                 {
-                    b.Navigation("Activities");
-
                     b.Navigation("FollowUps");
+                });
 
-                    b.Navigation("Opportunities");
+            modelBuilder.Entity("CRMPlatform.Domain.Entities.Opportunity", b =>
+                {
+                    b.Navigation("FollowUps");
                 });
 #pragma warning restore 612, 618
         }
