@@ -24,7 +24,6 @@ public class LeadsApiController : ControllerBase
         _context = context;
     }
 
-    // GET: /api/leads
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<LeadResponseDto>))]
     public async Task<IActionResult> GetAll()
@@ -36,7 +35,7 @@ public class LeadsApiController : ControllerBase
             .Select(l => new LeadResponseDto(
                 l.LeadId,
                 l.LeadName,
-                l.CompanyName,
+                l.CompanyName ?? string.Empty,
                 l.Email,
                 l.Phone,
                 l.Status,
@@ -49,7 +48,6 @@ public class LeadsApiController : ControllerBase
         return Ok(leads);
     }
 
-    // POST: /api/leads
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(LeadResponseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -73,7 +71,7 @@ public class LeadsApiController : ControllerBase
         var response = new LeadResponseDto(
             created.LeadId,
             created.LeadName,
-            created.CompanyName,
+            created.CompanyName ?? string.Empty,
             created.Email,
             created.Phone,
             created.Status,

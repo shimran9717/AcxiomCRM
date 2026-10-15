@@ -10,7 +10,7 @@ public record FollowUpResponseDto(
     int? OpportunityId,
     string FollowUpType,
     DateTime ScheduledDate,
-    bool IsCompleted,
+    string Status,
     string? Notes,
     string? AssignedTo
 );

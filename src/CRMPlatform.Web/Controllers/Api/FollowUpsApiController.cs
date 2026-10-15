@@ -25,7 +25,6 @@ public class FollowUpsApiController : ControllerBase
         _context = context;
     }
 
-    // GET: /api/followups
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FollowUpResponseDto>))]
     public async Task<IActionResult> GetAll()
@@ -42,7 +41,7 @@ public class FollowUpsApiController : ControllerBase
                 f.OpportunityId,
                 f.FollowUpType,
                 f.ScheduledDate,
-                f.IsCompleted,
+                f.Status,
                 f.Notes,
                 f.AssignedTo))
             .ToListAsync();
@@ -50,7 +49,6 @@ public class FollowUpsApiController : ControllerBase
         return Ok(followups);
     }
 
-    // POST: /api/followups
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(FollowUpResponseDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -67,7 +65,8 @@ public class FollowUpsApiController : ControllerBase
             OpportunityId = dto.OpportunityId,
             FollowUpType = dto.FollowUpType,
             ScheduledDate = DateTime.SpecifyKind(dto.ScheduledDate, DateTimeKind.Utc),
-            Notes = dto.Notes
+            Notes = dto.Notes,
+            Status = "Scheduled"
         };
 
         try
@@ -81,7 +80,7 @@ public class FollowUpsApiController : ControllerBase
                 created.OpportunityId,
                 created.FollowUpType,
                 created.ScheduledDate,
-                created.IsCompleted,
+                created.Status,
                 created.Notes,
                 created.AssignedTo);
 
